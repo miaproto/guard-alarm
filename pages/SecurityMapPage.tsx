@@ -1,10 +1,11 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Shield, WifiOff, Radio, Car, Layers, X, MapPin, Building2, AlertTriangle, BatteryWarning, Zap } from 'lucide-react';
+import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle } from 'lucide-react';
 import { Unit, Facility, FacilityTypeDefinition, Alarm } from '../types';
 import { DEPARTMENTS } from '../mockData';
 import { BookIcon } from '../components/Shared';
 import { TYPE_LABELS, isWarningType } from '../utils';
+import MapLibreMap, { MapMarker } from '../components/MapLibreMap';
 
 const SecurityMapPage = ({ 
   units, 
@@ -17,7 +18,6 @@ const SecurityMapPage = ({
   facilityTypes: FacilityTypeDefinition[];
   alarms: Alarm[];
 }) => {
-  const [isSatellite, setIsSatellite] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'OBJECTS' | 'UNITS'>('OBJECTS');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'FACILITY' | 'UNIT', id: string } | null>(null);
@@ -120,93 +120,69 @@ const SecurityMapPage = ({
     return null;
   }, [selectedEntity, facilities, units]);
 
-  // Dynamic Map Transformation (Zoom/Pan)
-  const mapTransformStyle = useMemo(() => {
-    if (selectedData) {
-      return {
-        transform: `scale(2.5)`,
-        transformOrigin: `${selectedData.coordinates.x}% ${selectedData.coordinates.y}%`
-      };
-    }
-    return {
-      transform: 'scale(1)',
-      transformOrigin: 'center center'
-    };
-  }, [selectedData]);
+  // Create map markers
+  const mapMarkers: MapMarker[] = useMemo(() => {
+    const markers: MapMarker[] = [];
+
+    // Add facility markers
+    facilities.forEach(f => {
+      markers.push({
+        id: `facility-${f.id}`,
+        coordinates: f.coordinates,
+        onClick: () => setSelectedEntity({ type: 'FACILITY', id: f.id }),
+        element: (
+          <div 
+            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg cursor-pointer transition-transform hover:scale-110 ${getFacilityColor(f)} ${selectedEntity?.id === f.id ? 'ring-4 ring-blue-500' : ''}`}
+          >
+            {f.type === 'BANK' ? <Shield className="w-4 h-4 text-white" /> : 
+              f.type === 'SCHOOL' ? <BookIcon className="w-4 h-4 text-white" /> :
+              <Shield className="w-4 h-4 text-white" />}
+          </div>
+        )
+      });
+    });
+
+    // Add unit markers
+    units.filter(u => u.shiftStatus !== 'OFF_DUTY').forEach(u => {
+      markers.push({
+        id: `unit-${u.id}`,
+        coordinates: u.coordinates,
+        onClick: () => setSelectedEntity({ type: 'UNIT', id: u.id }),
+        element: (
+          <div 
+            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-xl cursor-pointer transition-transform hover:scale-110 relative ${getUnitColor(u)} ${selectedEntity?.id === u.id ? 'ring-4 ring-blue-500' : ''}`}
+          >
+            <Car className="w-5 h-5 text-white" />
+            {/* Status Badges */}
+            {u.isWifiLost && (
+                <div className="absolute -top-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-white">
+                  <WifiOff className="w-2.5 h-2.5 text-red-400" />
+                </div>
+            )}
+            {u.isGpsLost && (
+                <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-white">
+                  <Radio className="w-2.5 h-2.5 text-orange-400" />
+                </div>
+            )}
+          </div>
+        )
+      });
+    });
+
+    return markers;
+  }, [facilities, units, selectedEntity, alarms]);
 
   return (
     <div className="flex h-full relative">
        {/* Map Layer */}
-       <div className="flex-1 relative bg-gray-100 overflow-hidden group/map">
-          {/* Map Content Container with Transform */}
-          <div 
-            className="absolute inset-0 w-full h-full transition-all duration-700 ease-in-out"
-            style={mapTransformStyle}
-          >
-              <div className={`absolute inset-0 transition-colors duration-500 ${isSatellite ? 'bg-slate-900' : 'bg-gray-100'}`}>
-                {!isSatellite && (
-                  <div className="absolute inset-0 opacity-10" style={{
-                      backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)',
-                      backgroundSize: '40px 40px'
-                  }}></div>
-                )}
-                {isSatellite && (
-                  <div className="absolute inset-0 opacity-40 mix-blend-overlay" style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                  }}></div>
-                )}
-              </div>
-
-              {/* Markers: Facilities */}
-              {facilities.map(f => (
-                <div 
-                  key={f.id} 
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-110 z-10 group/marker" 
-                  style={{ left: `${f.coordinates.x}%`, top: `${f.coordinates.y}%` }}
-                  onClick={() => setSelectedEntity({ type: 'FACILITY', id: f.id })}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg ${getFacilityColor(f)}`}>
-                    {f.type === 'BANK' ? <Building2 className="w-4 h-4 text-white" /> : 
-                      f.type === 'SCHOOL' ? <BookIcon className="w-4 h-4 text-white" /> :
-                      <Shield className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className={`absolute top-10 left-1/2 -translate-x-1/2 bg-white/95 px-2 py-1 rounded-xl text-sm font-bold shadow-xl whitespace-nowrap border border-gray-200 transition-opacity duration-200 pointer-events-none ${selectedEntity?.id === f.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover/marker:opacity-100 group-hover/marker:scale-100'}`}>
-                    {f.name}
-                  </div>
-                </div>
-              ))}
-
-              {/* Markers: Units */}
-              {units.map(u => (
-                <div 
-                  key={u.id} 
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-110 z-20 group/marker" 
-                  style={{ left: `${u.coordinates.x}%`, top: `${u.coordinates.y}%` }}
-                  onClick={() => setSelectedEntity({ type: 'UNIT', id: u.id })}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-xl relative ${getUnitColor(u)}`}>
-                    <Car className="w-5 h-5 text-white" />
-                    {/* Status Badges */}
-                    {u.isWifiLost && (
-                        <div className="absolute -top-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-white">
-                          <WifiOff className="w-2.5 h-2.5 text-red-400" />
-                        </div>
-                    )}
-                    {u.isGpsLost && (
-                        <div className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-white">
-                          <Radio className="w-2.5 h-2.5 text-orange-400" />
-                        </div>
-                    )}
-                  </div>
-                  <div className={`absolute top-12 left-1/2 -translate-x-1/2 bg-white/95 px-2 py-1 rounded-xl text-sm font-bold shadow-xl whitespace-nowrap border border-gray-200 transition-opacity duration-200 pointer-events-none ${selectedEntity?.id === u.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover/marker:opacity-100 group-hover/marker:scale-100'}`}>
-                    {u.name}
-                  </div>
-                </div>
-              ))}
-          </div>
+       <div className="flex-1 relative bg-gray-100 overflow-hidden">
+          <MapLibreMap 
+            markers={mapMarkers}
+            height="100%"
+          />
 
           {/* Statistics Overlay */}
-          <div className="absolute top-4 left-4 right-4 flex justify-center pointer-events-none z-30">
+          <div className="absolute top-4 left-4 right-4 flex justify-center pointer-events-none z-10">
              <div className="bg-white/95 backdrop-blur shadow-lg border border-gray-200 rounded-xl p-2 flex gap-8 pointer-events-auto">
                 <div className="flex flex-col items-center px-4 border-r border-gray-200">
                    <span className="text-xs font-bold text-gray-500 uppercase mb-1">Պահպանվող Օբյեկտներ</span>
@@ -229,17 +205,6 @@ const SecurityMapPage = ({
              </div>
           </div>
 
-          {/* Map Controls */}
-          <div className="absolute bottom-6 right-6 z-30">
-            <button 
-              onClick={() => setIsSatellite(!isSatellite)}
-              className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-xl shadow-lg border border-gray-200 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-            >
-               <Layers className="w-5 h-5" />
-               <span className="text-sm font-bold">{isSatellite ? 'Արբանյակ' : 'Քարտեզ'}</span>
-            </button>
-          </div>
-
           {/* Details Popup */}
           {selectedEntity && selectedData && (
              <div className="absolute top-20 right-4 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-40 animate-in slide-in-from-right duration-200">
@@ -249,7 +214,7 @@ const SecurityMapPage = ({
                    </h3>
                    <button onClick={() => setSelectedEntity(null)} className="p-1 hover:bg-gray-200 rounded-full"><X className="w-4 h-4 text-gray-500" /></button>
                 </div>
-                <div className="p-4 space-y-4">
+                <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
                    {selectedEntity.type === 'FACILITY' ? (() => {
                       const f = selectedData as Facility;
                       const activeAlarm = alarms.find(a => a.id === f.activeAlarmId);

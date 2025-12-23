@@ -15,8 +15,8 @@ export type CallType =
 export type CallStatus = 'IN_PROGRESS' | 'COMPLETED';
 
 export interface Coordinates {
-  x: number;
-  y: number;
+  lat: number;
+  lng: number;
 }
 
 export interface CallRecord {

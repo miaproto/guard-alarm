@@ -27,44 +27,44 @@ export const MOCK_UNITS: Unit[] = [
   { 
     id: 'U-101', name: 'Կարգախումբ 101', boardNumber: 'Y0101', plateNumber: '555 ՈՈ 01', status: 'AVAILABLE', shiftStatus: 'ON_DUTY', 
     statusStartTime: new Date(Date.now() - 3600000), shiftStartTime: new Date(Date.now() - 1000 * 60 * 60 * 4), shiftEndTime: new Date(Date.now() + 1000 * 60 * 60 * 8),
-    department: 'Kentron', coordinates: { x: 45, y: 35 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: false, vehicleId: 'V-001'
+    department: 'Kentron', coordinates: { lat: 40.1812, lng: 44.5136 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: false, vehicleId: 'V-001'
   },
   { 
     id: 'U-102', name: 'Կարգախումբ 102', boardNumber: 'Y0102', plateNumber: '555 ՈՈ 02', status: 'BUSY', shiftStatus: 'BREAK', 
     statusStartTime: new Date(Date.now() - 1800000), shiftStartTime: new Date(Date.now() - 1000 * 60 * 60 * 5), shiftEndTime: new Date(Date.now() + 1000 * 60 * 60 * 7),
-    department: 'Arabkir', coordinates: { x: 20, y: 20 }, crew: MOCK_CREW, isWifiLost: true, isGpsLost: false, vehicleId: 'V-002'
+    department: 'Arabkir', coordinates: { lat: 40.2010, lng: 44.4820 }, crew: MOCK_CREW, isWifiLost: true, isGpsLost: false, vehicleId: 'V-002'
   },
   { 
     id: 'U-103', name: 'Կարգախումբ 103', boardNumber: 'Y0103', plateNumber: '555 ՈՈ 03', status: 'AVAILABLE', shiftStatus: 'OFF_DUTY', 
     statusStartTime: new Date(Date.now() - 7200000), shiftStartTime: new Date(Date.now() - 1000 * 60 * 60 * 12), shiftEndTime: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    department: 'Nor Nork', coordinates: { x: 75, y: 30 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: true, vehicleId: 'V-003'
+    department: 'Nor Nork', coordinates: { lat: 40.2100, lng: 44.5500 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: true, vehicleId: 'V-003'
   },
   { 
     id: 'U-104', name: 'Կարգախումբ 104', boardNumber: 'Y0104', plateNumber: '555 ՈՈ 04', status: 'AVAILABLE', shiftStatus: 'ALARM', activeAlarmId: '2025-124', 
     statusStartTime: new Date(Date.now() - 900000), shiftStartTime: new Date(Date.now() - 1000 * 60 * 60 * 3), shiftEndTime: new Date(Date.now() + 1000 * 60 * 60 * 9),
-    department: 'Kentron', coordinates: { x: 50, y: 40 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: false, vehicleId: 'V-004' 
+    department: 'Kentron', coordinates: { lat: 40.1850, lng: 44.5080 }, crew: MOCK_CREW, isWifiLost: false, isGpsLost: false, vehicleId: 'V-004' 
   },
 ];
 
 export const MOCK_FACILITIES: Facility[] = [
   {
-    id: 'OBJ-112', name: 'Ոսկու Շուկա', type: 'SHOP', department: 'Kentron', address: 'ք. Երևան, Խորենացի 24', coordinates: { x: 42, y: 45 },
+    id: 'OBJ-112', name: 'Ոսկու Շուկա', type: 'SHOP', department: 'Kentron', address: 'ք. Երևան, Խորենացի 24', coordinates: { lat: 40.1792, lng: 44.5086 },
     contactPerson: 'Կարեն Կարապետյան', phones: ['094-00-11-22'], isArmed: true, connectionStatus: 'ONLINE', activeAlarmId: '2025-127', schedule: '24/7', password: '123', isArchived: false
   },
   {
-    id: 'OBJ-055', name: 'Երևանի թիվ 114 դպրոց', type: 'SCHOOL', department: 'Kentron', address: 'ք. Երևան, Հանրապետության 7', coordinates: { x: 52, y: 38 },
+    id: 'OBJ-055', name: 'Երևանի թիվ 114 դպրոց', type: 'SCHOOL', department: 'Kentron', address: 'ք. Երևան, Հանրապետության 7', coordinates: { lat: 40.1770, lng: 44.5130 },
     contactPerson: 'Նարինե Պետրոսյան', phones: ['099-88-77-66'], isArmed: true, connectionStatus: 'ONLINE', activeAlarmId: '2025-124', schedule: 'Երկ-Ուրբ, 18:00 - 08:00', password: '456', isArchived: false
   },
   {
-    id: 'OBJ-001', name: 'Ամերիաբանկ ՓԲԸ', type: 'BANK', department: 'Kentron', address: 'ք. Երևան, Թումանյան 15', coordinates: { x: 48, y: 32 },
+    id: 'OBJ-001', name: 'Ամերիաբանկ ՓԲԸ', type: 'BANK', department: 'Kentron', address: 'ք. Երևան, Թումանյան 15', coordinates: { lat: 40.1836, lng: 44.5145 },
     contactPerson: 'Արմեն Սարգսյան', phones: ['091-11-22-33'], isArmed: true, connectionStatus: 'ONLINE', schedule: '24/7', password: '789', isArchived: false
   },
   {
-    id: 'OBJ-099', name: 'Սուպերմարկետ "Երևան Սիթի"', type: 'SHOP', department: 'Arabkir', address: 'ք. Երևան, Կոմիտաս 22', coordinates: { x: 25, y: 25 },
+    id: 'OBJ-099', name: 'Սուպերմարկետ "Երևան Սիթի"', type: 'SHOP', department: 'Arabkir', address: 'ք. Երևան, Կոմիտաս 22', coordinates: { lat: 40.2025, lng: 44.4890 },
     contactPerson: 'Գևորգ Գևորգյան', phones: ['093-33-22-11'], isArmed: false, connectionStatus: 'OFFLINE', activeAlarmId: '2025-125', schedule: '24/7', password: '000', isArchived: false
   },
   {
-    id: 'OBJ-200', name: 'Թանգարան', type: 'MUSEUM', department: 'Erebuni', address: 'ք. Երևան, Էրեբունի 1', coordinates: { x: 65, y: 65 },
+    id: 'OBJ-200', name: 'Թանգարան', type: 'MUSEUM', department: 'Erebuni', address: 'ք. Երևան, Էրեբունի 1', coordinates: { lat: 40.1368, lng: 44.4949 },
     contactPerson: 'Հայկ Հայկյան', phones: ['010-11-11-11'], isArmed: true, connectionStatus: 'ONLINE', schedule: '24/7', password: '111', isArchived: false
   }
 ];
@@ -99,7 +99,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Սեյֆի սենյակի շարժման տվիչ:',
     contactPerson: 'Կարեն Կարապետյան',
     contactPhones: ['094-00-11-22', '091-55-44-33', '010-22-33-44'],
-    coordinates: { x: 42, y: 45 },
+    coordinates: { lat: 40.1792, lng: 44.5086 },
     unitActions: [],
     callHistory: [],
     unitFinishedWork: false,
@@ -119,7 +119,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Հիմնական հոսանքի անջատում (220V)',
     contactPerson: 'Արմեն Սարգսյան',
     contactPhones: ['091-11-22-33'],
-    coordinates: { x: 48, y: 32 },
+    coordinates: { lat: 40.1836, lng: 44.5145 },
     unitActions: [],
     callHistory: [],
     unitFinishedWork: false,
@@ -139,7 +139,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Կապի խափանում կենտրոնական վահանակի հետ',
     contactPerson: 'Գևորգ Գևորգյան',
     contactPhones: ['093-33-22-11'],
-    coordinates: { x: 25, y: 25 },
+    coordinates: { lat: 40.2025, lng: 44.4890 },
     assignedUnitId: 'U-102',
     unitActions: [
       { unitName: 'Կարգախումբ 102', action: 'Ստացել է կանչը', actionType: 'RECEIVE', timestamp: new Date(Date.now() - 1000 * 60 * 29) },
@@ -163,7 +163,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Շարժման տվիչի ակտիվացում միջանցքում:',
     contactPerson: 'Նարինե Պետրոսյան',
     contactPhones: ['099-88-77-66', '093-11-22-33'],
-    coordinates: { x: 52, y: 38 },
+    coordinates: { lat: 40.1770, lng: 44.5130 },
     assignedUnitId: 'U-104',
     unitActions: [
       { unitName: 'Կարգախումբ 102', action: 'Ստացել է կանչը', actionType: 'RECEIVE', timestamp: new Date(Date.now() - 1000 * 60 * 44) },
@@ -193,7 +193,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Տագնապի կոճակ (Panic Button). Դրամարկղ 2.',
     contactPerson: 'Արմեն Սարգսյան',
     contactPhones: ['091-11-22-33', '010-55-44-33'],
-    coordinates: { x: 48, y: 32 },
+    coordinates: { lat: 40.1836, lng: 44.5145 },
     unitActions: [],
     callHistory: [],
     unitFinishedWork: false,
@@ -213,7 +213,7 @@ export const MOCK_ALARMS: Alarm[] = [
     description: 'Անվտանգության համակարգի խափանում:',
     contactPerson: 'Գևորգ Գևորգյան',
     contactPhones: ['093-33-22-11'],
-    coordinates: { x: 25, y: 25 },
+    coordinates: { lat: 40.2025, lng: 44.4890 },
     unitActions: [],
     callHistory: [],
     unitFinishedWork: true,
@@ -246,10 +246,10 @@ export const MOCK_CALLS: CallLog[] = [
 ];
 
 export const MOCK_SECURITY_DEPARTMENTS: SecurityDepartment[] = [
-  { id: 'Kentron', name: 'Կենտրոն', address: 'ք. Երևան, Նալբանդյան 104', contactPerson: 'Արմեն Ավագյան', contactPhone: '010-55-55-55', isArchived: false, coordinates: {x: 50, y: 50} },
-  { id: 'Arabkir', name: 'Արաբկիր', address: 'ք. Երևան, Մամիկոնյանց 1', contactPerson: 'Վահան Սարգսյան', contactPhone: '010-22-22-22', isArchived: false, coordinates: {x: 30, y: 30} },
-  { id: 'Nor Nork', name: 'Նոր Նորք', address: 'ք. Երևան, Գայի պողոտա 2', contactPerson: 'Հայկ Պետրոսյան', contactPhone: '010-66-66-66', isArchived: false, coordinates: {x: 70, y: 40} },
-  { id: 'Erebuni', name: 'Էրեբունի', address: 'ք. Երևան, Խաղաղ Դոնի 1', contactPerson: 'Գևորգ Կարապետյան', contactPhone: '010-44-44-44', isArchived: true, coordinates: {x: 60, y: 70} },
+  { id: 'Kentron', name: 'Կենտրոն', address: 'ք. Երևան, Նալբանդյան 104', contactPerson: 'Արմեն Ավագյան', contactPhone: '010-55-55-55', isArchived: false, coordinates: { lat: 40.1792, lng: 44.5136 } },
+  { id: 'Arabkir', name: 'Արաբկիր', address: 'ք. Երևան, Մամիկոնյանց 1', contactPerson: 'Վահան Սարգսյան', contactPhone: '010-22-22-22', isArchived: false, coordinates: { lat: 40.2010, lng: 44.4820 } },
+  { id: 'Nor Nork', name: 'Նոր Նորք', address: 'ք. Երևան, Գայի պողոտա 2', contactPerson: 'Հայկ Պետրոսյան', contactPhone: '010-66-66-66', isArchived: false, coordinates: { lat: 40.2100, lng: 44.5500 } },
+  { id: 'Erebuni', name: 'Էրեբունի', address: 'ք. Երևան, Խաղաղ Դոնի 1', contactPerson: 'Գևորգ Կարապետյան', contactPhone: '010-44-44-44', isArchived: true, coordinates: { lat: 40.1368, lng: 44.4949 } },
 ];
 
 export const MOCK_FACILITY_TYPES_DEF: FacilityTypeDefinition[] = [
