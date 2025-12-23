@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="hy">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ոստիկանության Տագնապների Կառավարում</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Roboto', 'sans-serif'],
+            },
+            keyframes: {
+              'new-alarm-pulse': {
+                '0%, 100%': { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+                '50%': { backgroundColor: 'rgba(239, 68, 68, 0.3)' },
+              }
+            },
+            animation: {
+              'new-alarm-pulse': 'new-alarm-pulse 2s ease-in-out infinite',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8fafc; /* Slate 50 */
+        color: #0f172a; /* Slate 900 */
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      .animate-pulse-slow {
+        animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+      
+      .new-alarm-row {
+        animation: new-alarm-pulse 2s ease-in-out infinite;
+      }
+      
+      @keyframes new-alarm-pulse {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(239, 68, 68, 0.15); }
+      }
+      
+      .new-warning-row {
+        animation: new-warning-pulse 2s ease-in-out infinite;
+      }
+      
+      @keyframes new-warning-pulse {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(245, 158, 11, 0.15); }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="antialiased text-slate-900 bg-slate-50">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
