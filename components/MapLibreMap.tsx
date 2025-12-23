@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect } from 'react';
-import Map, { Marker, NavigationControl, ScaleControl, FullscreenControl, MapRef } from 'react-map-gl';
+import Map, { Marker, NavigationControl, ScaleControl, FullscreenControl, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export interface MapMarker {
