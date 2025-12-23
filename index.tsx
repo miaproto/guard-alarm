@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   Shield, 
@@ -33,6 +33,9 @@ import { Alarm, Unit, Facility, ServiceVehicle, CallRecord, FacilityTypeDefiniti
 import { MOCK_ALARMS, MOCK_FACILITIES, MOCK_UNITS, MOCK_VEHICLES, MOCK_SECURITY_DEPARTMENTS, MOCK_FACILITY_TYPES_DEF, DEPARTMENTS } from './mockData';
 import { formatTimeFirst, TYPE_LABELS, ACTION_LABELS, isWarningType } from './utils';
 import { StatusBadge, TypeBadge, SidebarItem, Pagination, MultiSelect } from './components/Shared';
+import { ITEMS_PER_PAGE, ALARM_GENERATION_INTERVAL, NEW_ALARM_HIGHLIGHT_DURATION, ALARM_SOUND_FREQUENCY, ALARM_SOUND_DURATION, ALARM_SOUND_VOLUME, getNewAlarmId } from './constants';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider, useToast } from './components/Toast';
 
 // Components
 import SecurityLogsPage from './pages/SecurityLogsPage';
@@ -47,7 +50,9 @@ import AlarmDetailsPanel from './components/AlarmDetailsPanel';
 import UnitMapModal from './components/modals/UnitMapModal';
 import LocationMapModal from './components/modals/LocationMapModal';
 
-const App = () => {
+const AppContent = () => {
+  const { showToast } = useToast();
+  
   // --- State ---
   const [currentView, setCurrentView] = useState<'ALARMS' | 'MAP' | 'CALLS' | 'LOGS' | 'DEPARTMENTS' | 'FACILITIES' | 'FACILITY_TYPES' | 'VEHICLES' | 'UNITS_MANAGEMENT'>('ALARMS');
   const [facilities, setFacilities] = useState<Facility[]>(MOCK_FACILITIES);
@@ -64,7 +69,6 @@ const App = () => {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 9;
 
   // New Tab State for Alarms vs Warnings
   const [incidentTab, setIncidentTab] = useState<'ALL' | 'ALARM' | 'WARNING'>('ALL');
@@ -84,25 +88,33 @@ const App = () => {
 
   const selectedAlarm = useMemo(() => alarms.find(a => a.id === selectedAlarmId), [alarms, selectedAlarmId]);
 
+  // Audio Context Reference (reused to prevent memory leaks)
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
   // Audio Player for Alarms
   const playAlarmSound = useCallback(() => {
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Create AudioContext once and reuse it
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const audioCtx = audioCtxRef.current;
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
       oscillator.type = 'sawtooth';
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-      oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
+      oscillator.frequency.setValueAtTime(ALARM_SOUND_FREQUENCY, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(ALARM_SOUND_FREQUENCY / 2, audioCtx.currentTime + ALARM_SOUND_DURATION);
 
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      gainNode.gain.setValueAtTime(ALARM_SOUND_VOLUME, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + ALARM_SOUND_DURATION);
 
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
 
       oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.5);
+      oscillator.stop(audioCtx.currentTime + ALARM_SOUND_DURATION);
     } catch (e) {
       console.warn('Audio playback failed', e);
     }
@@ -110,46 +122,55 @@ const App = () => {
 
   // --- Automatic Alarm Generation ---
   const generateRandomAlarm = useCallback(() => {
-    const randomFacility = facilities[Math.floor(Math.random() * facilities.length)];
-    const alarmTypes: AlarmType[] = ['GENERAL', 'SILENT', 'POWER_LOSS', 'LOW_BATTERY', 'CONNECTION_LOST'];
-    const randomType = alarmTypes[Math.floor(Math.random() * alarmTypes.length)];
-    
-    const newId = `2025-${alarmIdCounter}`;
-    setAlarmIdCounter(prev => prev + 1);
+    setAlarmIdCounter(prevCounter => {
+      const newId = getNewAlarmId(prevCounter);
+      
+      setFacilities(currentFacilities => {
+        if (currentFacilities.length === 0) return currentFacilities;
+        
+        const randomFacility = currentFacilities[Math.floor(Math.random() * currentFacilities.length)];
+        const alarmTypes: AlarmType[] = ['GENERAL', 'SILENT', 'POWER_LOSS', 'LOW_BATTERY', 'CONNECTION_LOST'];
+        const randomType = alarmTypes[Math.floor(Math.random() * alarmTypes.length)];
 
-    const newAlarm: Alarm = {
-      id: newId,
-      isSeen: false,
-      status: 'RECEIVED',
-      timestamp: new Date(),
-      type: randomType,
-      facilityCode: randomFacility.id,
-      facilityName: randomFacility.name,
-      facilityType: randomFacility.type,
-      address: randomFacility.address,
-      department: randomFacility.department,
-      description: `Ավտոմատ գեներացված իրադարձություն: ${TYPE_LABELS[randomType]}`,
-      contactPerson: randomFacility.contactPerson,
-      contactPhones: randomFacility.phones,
-      coordinates: randomFacility.coordinates,
-      unitActions: [],
-      callHistory: [],
-      unitFinishedWork: false,
-      facilityPassword: randomFacility.password,
-    };
+        const newAlarm: Alarm = {
+          id: newId,
+          isSeen: false,
+          status: 'RECEIVED',
+          timestamp: new Date(),
+          type: randomType,
+          facilityCode: randomFacility.id,
+          facilityName: randomFacility.name,
+          facilityType: randomFacility.type,
+          address: randomFacility.address,
+          department: randomFacility.department,
+          description: `Ավտոմատ գեներացված իրադարձություն: ${TYPE_LABELS[randomType]}`,
+          contactPerson: randomFacility.contactPerson,
+          contactPhones: randomFacility.phones,
+          coordinates: randomFacility.coordinates,
+          unitActions: [],
+          callHistory: [],
+          unitFinishedWork: false,
+          facilityPassword: randomFacility.password,
+        };
 
-    setAlarms(prev => [newAlarm, ...prev]);
+        setAlarms(prev => [newAlarm, ...prev]);
 
-    // Play sound if it's an alarm (not a warning)
-    if (!isWarningType(randomType)) {
-      playAlarmSound();
-    }
-  }, [facilities, playAlarmSound, alarmIdCounter]);
+        // Play sound if it's an alarm (not a warning)
+        if (!isWarningType(randomType)) {
+          playAlarmSound();
+        }
+        
+        return currentFacilities;
+      });
+
+      return prevCounter + 1;
+    });
+  }, [playAlarmSound]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       generateRandomAlarm();
-    }, 300000); // 5 minutes
+    }, ALARM_GENERATION_INTERVAL);
 
     return () => clearInterval(interval);
   }, [generateRandomAlarm]);
@@ -250,7 +271,7 @@ const App = () => {
       ? { ...a, callHistory: [newRecord, ...a.callHistory] }
       : a
     ));
-    alert(`Զանգը կատարվում է դեպի ${phone}...`);
+    showToast(`Զանգը կատարվում է դեպի ${phone}`, 'info');
   };
 
   const handleFinishAlarm = () => {
@@ -649,8 +670,8 @@ const App = () => {
                                 paginatedAlarms.map(alarm => {
                                 const assignedUnit = units.find(u => u.id === alarm.assignedUnitId);
                                 
-                                // Logic for new alarm highlight (within last 10 seconds and unseen)
-                                const isVeryNew = Date.now() - alarm.timestamp.getTime() < 10000;
+                                // Logic for new alarm highlight (within last duration and unseen)
+                                const isVeryNew = Date.now() - alarm.timestamp.getTime() < NEW_ALARM_HIGHLIGHT_DURATION;
                                 const animationClass = (isVeryNew && !alarm.isSeen) 
                                   ? (isWarningType(alarm.type) ? 'new-warning-row' : 'new-alarm-row') 
                                   : '';
@@ -772,6 +793,17 @@ const App = () => {
       />
 
     </div>
+  );
+};
+
+// Main App wrapper with providers
+const App = () => {
+  return (
+    <ErrorBoundary>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ErrorBoundary>
   );
 };
 
