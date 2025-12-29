@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
+      // GitHub Pages serves this repo under /guard-alarm/
+      // (Local dev remains at /)
+      base: mode === 'production' ? '/guard-alarm/' : '/',
       server: {
         port: 3000,
         host: '0.0.0.0',

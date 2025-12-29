@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local duplicate/legacy copy of the repo (should not be committed)
+guardia-proto/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
