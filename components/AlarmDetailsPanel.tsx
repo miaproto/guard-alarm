@@ -1,10 +1,13 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { X, Clock, Siren, Shield, MapPin, Navigation, ChevronDown, Users, Phone, PhoneCall, Activity, ArrowDownLeft, Play, CheckCircle, FileText, Eye, EyeOff, Lock, Zap, BatteryWarning, WifiOff, BellOff } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { X, Clock, Siren, Shield, MapPin, Navigation, ChevronDown, Users, Phone, PhoneCall, Activity, ArrowDownLeft, CheckCircle, FileText, Eye, EyeOff, Lock, Zap, BatteryWarning, WifiOff, BellOff, Building2 } from 'lucide-react';
 import { Alarm, UnitAction, FacilityTypeDefinition } from '../types';
 import { StatusBadge } from './Shared';
-import { TYPE_LABELS, isWarningType } from '../utils';
+import { TYPE_LABELS, isWarningType, formatDuration } from '../utils';
 import { DEPARTMENTS } from '../mockData';
+import { WaveformPlayer } from './calls/WaveformPlayer';
+
+type FinishReason = 'FALSE_ALARM' | 'RESOLVED' | 'TEST';
 
 const AlarmDetailsPanel = ({ 
   alarm, 
@@ -18,24 +21,28 @@ const AlarmDetailsPanel = ({
   alarm: Alarm; 
   onClose: () => void;
   onCall: (phone: string) => void;
-  onFinish: () => void;
+  onFinish: (reason: FinishReason) => void;
   onDownloadReport: () => void;
   onViewMap: () => void;
   facilityTypes: FacilityTypeDefinition[];
 }) => {
-  const [finishReason, setFinishReason] = useState('RESOLVED');
+  const [finishReason, setFinishReason] = useState<FinishReason>('RESOLVED');
   const [isFinishing, setIsFinishing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [isUnitsOpen, setIsUnitsOpen] = useState(true);
   const [isContactsOpen, setIsContactsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [playingRecordingId, setPlayingRecordingId] = useState<string | null>(null);
+  const [recordingProgress, setRecordingProgress] = useState<Record<string, { current: number; duration: number }>>({});
 
   useEffect(() => {
     setIsUnitsOpen(true);
     setIsContactsOpen(false);
     setIsHistoryOpen(false);
     setShowPassword(false);
+    setPlayingRecordingId(null);
+    setRecordingProgress({});
     // Set default finish reason based on type
     if (isWarningType(alarm.type)) {
       setFinishReason('RESOLVED');
@@ -90,7 +97,6 @@ const AlarmDetailsPanel = ({
                  <h2 className="text-2xl font-bold text-slate-900 tracking-tight font-mono">{alarm.id}</h2>
                  <StatusBadge status={alarm.status} />
              </div>
-             <div className="text-xs text-slate-500 font-medium">Մանրամասն տեղեկատվություն</div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-900 transition-colors">
             <X className="w-6 h-6" />
@@ -100,27 +106,27 @@ const AlarmDetailsPanel = ({
        <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50">
           
           {/* Header Info Card */}
-          <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-             <div className="flex items-center justify-between text-sm pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+          <section className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+             <div className="flex flex-wrap items-center justify-between gap-2 text-xs pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
                     <Clock className="w-4 h-4 text-slate-400" />
                     <span className="font-mono font-medium">{alarm.timestamp.toLocaleTimeString('hy-AM', {hour:'2-digit', minute:'2-digit'})}</span>
                     <span className="text-slate-300">|</span>
                     <span>{alarm.timestamp.toLocaleDateString('hy-AM')}</span>
                 </div>
-                <div className={`flex items-center gap-2 font-bold px-3 py-1.5 rounded-lg border ${getTypeStyle()}`}>
+                <div className={`flex items-center gap-2 font-bold px-2 py-1 rounded-md border ${getTypeStyle()}`}>
                     {getTypeIcon()}
                     {TYPE_LABELS[alarm.type]}
                 </div>
              </div>
 
-             <div className="flex items-start gap-4">
-                <div className="mt-1 w-12 h-12 flex items-center justify-center bg-blue-600 rounded-xl text-white shadow-blue-200 shadow-lg">
-                   <Building2 className="w-6 h-6" />
+             <div className="flex items-start gap-3">
+                <div className="mt-0.5 w-10 h-10 flex items-center justify-center bg-blue-600 rounded-xl text-white shadow-blue-200 shadow-md">
+                   <Building2 className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-xl text-slate-900 leading-tight mb-1.5">{alarm.facilityName}</h3>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-3">
+                  <h3 className="font-bold text-lg text-slate-900 leading-snug mb-1">{alarm.facilityName}</h3>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-2">
                      <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-700 font-mono font-semibold">{alarm.facilityCode}</span>
                      <span>•</span>
                      <span className="font-medium">{DEPARTMENTS[alarm.department]}</span>
@@ -130,28 +136,28 @@ const AlarmDetailsPanel = ({
                   
                   <button 
                     onClick={onViewMap}
-                    className="flex items-center gap-2 text-slate-600 text-sm hover:text-blue-600 transition-colors group text-left" 
+                    className="flex items-center gap-2 text-slate-600 text-xs hover:text-blue-600 transition-colors group text-left" 
                   >
                      <MapPin className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-500" />
                      <span className="border-b border-dashed border-slate-300 group-hover:border-blue-300">{alarm.address}</span>
                   </button>
 
                   {alarm.facilityPassword && (
-                    <div className="mt-4 p-3 bg-amber-50 rounded-lg flex items-center justify-between border border-amber-200">
+                    <div className="mt-2 p-2 bg-amber-50 rounded-lg flex items-center justify-between border border-amber-200">
                          <div className="flex items-center gap-2 text-amber-800">
                              <Lock className="w-4 h-4" />
                              <span className="text-xs font-bold uppercase tracking-wide">Գաղտնաբառ</span>
                          </div>
                          <div className="flex items-center gap-3">
-                            <span className="font-mono font-bold text-slate-900 bg-white px-3 py-1 rounded border border-amber-100 min-w-[80px] text-center tracking-widest text-lg">
+                            <span className="font-mono font-bold text-slate-900 bg-white px-2.5 py-1 rounded border border-amber-100 min-w-[72px] text-center tracking-widest text-base">
                                 {showPassword ? alarm.facilityPassword : '••••••'}
                             </span>
                             <button 
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded p-1.5 transition-colors"
+                                className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded p-1 transition-colors"
                                 title={showPassword ? 'Թաքցնել' : 'Ցուցադրել'}
                             >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                          </div>
                     </div>
@@ -176,21 +182,22 @@ const AlarmDetailsPanel = ({
               </button>
               
               {isUnitsOpen && (
-                 <div className="p-5 bg-white">
+                 <div className="p-4 bg-white">
                      {Object.keys(groupedActions).length === 0 ? (
-                       <div className="text-sm text-slate-400 italic text-center py-4">Դեռևս գործողություններ չկան</div>
+                       <div className="text-sm text-slate-400 italic text-center py-3">Դեռևս գործողություններ չկան</div>
                      ) : (
-                       <div className="space-y-6">
+                       <div className="space-y-4">
                           {Object.entries(groupedActions).map(([unitName, actions]: [string, UnitAction[]]) => (
                              <div key={unitName} className="relative">
-                                <div className="flex items-center gap-3 mb-4">
-                                   <div className="h-px bg-slate-200 flex-1"></div>
-                                   <span className="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-full text-xs">{unitName}</span>
+                                <div className="flex items-center gap-2 mb-2">
+                                   <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-full text-xs">
+                                     {unitName}
+                                   </span>
                                    <div className="h-px bg-slate-200 flex-1"></div>
                                 </div>
                                 
-                                <div className="space-y-0 relative ml-4">
-                                   <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-200"></div>
+                                <div className="space-y-0 relative ml-2">
+                                   <div className="absolute left-[5px] top-1 bottom-1 w-px bg-slate-200"></div>
 
                                    {actions.map((action, idx) => {
                                       let iconColor = 'bg-slate-400 border-slate-200';
@@ -204,16 +211,26 @@ const AlarmDetailsPanel = ({
                                       if (action.actionType === 'FINISH') { iconColor = 'bg-green-500'; textColor = 'text-green-700 font-bold'; highlight = true; }
 
                                       return (
-                                          <div key={idx} className="relative pl-8 pb-6 last:pb-0 group">
-                                              <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full ${iconColor} border-4 border-white z-10 shadow-sm ring-1 ring-slate-100`}></div>
-                                              <div className={`flex flex-col p-3 rounded-lg border transition-all ${highlight ? 'bg-slate-50 border-slate-200' : 'border-transparent'}`}>
-                                                  <span className={`text-sm ${textColor}`}>
+                                          <div key={idx} className="relative pl-6 pb-3 last:pb-0 group">
+                                              <div
+                                                className={`absolute left-0 top-1.5 w-3 h-3 rounded-full ${iconColor} border-2 border-white z-10 shadow-sm ring-1 ring-slate-100`}
+                                              ></div>
+                                              <div
+                                                className={`flex items-start justify-between gap-3 rounded-md px-2 py-1.5 transition-colors ${
+                                                  highlight ? 'bg-slate-50' : 'bg-transparent'
+                                                }`}
+                                              >
+                                                  <span className={`text-sm leading-snug ${textColor}`}>
                                                       {action.action}
                                                   </span>
-                                                  <div className="text-xs text-slate-400 font-mono mt-1 flex gap-2">
-                                                      <span className="font-medium text-slate-500">{action.timestamp.toLocaleTimeString('hy-AM', {hour:'2-digit', minute:'2-digit'})}</span>
+                                                  <div className="text-xs text-slate-400 font-mono flex gap-2 shrink-0">
+                                                      <span className="font-medium text-slate-500">
+                                                        {action.timestamp.toLocaleTimeString('hy-AM', {hour:'2-digit', minute:'2-digit'})}
+                                                      </span>
                                                       <span>•</span>
-                                                      <span>{action.timestamp.toLocaleDateString('hy-AM', {day: '2-digit', month: '2-digit'})}</span>
+                                                      <span>
+                                                        {action.timestamp.toLocaleDateString('hy-AM', {day: '2-digit', month: '2-digit'})}
+                                                      </span>
                                                   </div>
                                               </div>
                                           </div>
@@ -262,7 +279,10 @@ const AlarmDetailsPanel = ({
                              <span className="font-mono text-lg font-medium text-slate-700">{phone}</span>
                           </div>
                           <button 
-                            onClick={() => onCall(phone)}
+                            onClick={() => {
+                              onCall(phone);
+                              setIsHistoryOpen(true);
+                            }}
                             className="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm"
                           >
                              <PhoneCall className="w-4 h-4" />
@@ -295,7 +315,15 @@ const AlarmDetailsPanel = ({
                    {alarm.callHistory.length === 0 ? (
                       <div className="text-sm text-slate-400 italic px-2">Ձայնագրություններ չկան</div>
                    ) : (
-                     alarm.callHistory.map(call => (
+                     alarm.callHistory.map((call) => {
+                      const waveformId = `${alarm.id}:${call.id}`;
+                      const url = call.recordingUrl;
+                      const progress = recordingProgress[waveformId];
+                      const isThisPlaying = playingRecordingId === waveformId;
+                      const totalSec = call.durationSec ?? Math.round(progress?.duration ?? 0);
+                      const elapsedSec = Math.floor(progress?.current ?? 0);
+
+                      return (
                      <div key={call.id} className="text-sm p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2 hover:border-slate-300 transition-colors">
                         <div className="flex justify-between items-center text-slate-500 text-xs uppercase font-semibold tracking-wide">
                           <span className="text-slate-600">{call.operatorName}</span>
@@ -307,15 +335,31 @@ const AlarmDetailsPanel = ({
                               <span className="font-mono text-slate-800 font-medium">{call.phoneNumber}</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-md font-mono">{call.durationSec} վրկ</span>
-                            <button className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-xs font-bold bg-blue-50 px-3 py-1.5 rounded-md transition-colors">
-                              <Play className="w-3 h-3 fill-current" />
-                              Լսել
-                            </button>
+                            <span className="text-xs text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-md font-mono">
+                              {(isThisPlaying || elapsedSec > 0)
+                                ? `${formatDuration(elapsedSec)} / ${formatDuration(totalSec)}`
+                                : formatDuration(totalSec)}
+                            </span>
+                            <WaveformPlayer
+                              callId={waveformId}
+                              recordingUrl={url}
+                              isCurrentlyPlaying={playingRecordingId === waveformId}
+                              onPlayStateChange={(id, playing) => {
+                                if (playing) setPlayingRecordingId(id);
+                                else if (playingRecordingId === id) setPlayingRecordingId(null);
+                              }}
+                              onProgress={(id, currentTimeSec, durationSec) => {
+                                setRecordingProgress((prev) => ({
+                                  ...prev,
+                                  [id]: { current: currentTimeSec, duration: durationSec || prev[id]?.duration || 0 },
+                                }));
+                              }}
+                            />
                           </div>
                         </div>
                      </div>
-                   ))
+                   );
+                  })
                    )}
               </div>
             )}
@@ -332,7 +376,7 @@ const AlarmDetailsPanel = ({
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Ընտրեք ավարտման պատճառը</label>
                     <select 
                       value={finishReason}
-                      onChange={(e) => setFinishReason(e.target.value)}
+                      onChange={(e) => setFinishReason(e.target.value as FinishReason)}
                       className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 mb-4 transition-shadow"
                     >
                        {!isWarning && <option value="FALSE_ALARM">Կեղծ տագնապ (False Alarm)</option>}
@@ -340,7 +384,7 @@ const AlarmDetailsPanel = ({
                        <option value="TEST">Ստուգում (System Test)</option>
                     </select>
                     <div className="flex gap-3">
-                       <button onClick={() => { onFinish(); setIsFinishing(false); }} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-200">Հաստատել</button>
+                       <button onClick={() => { onFinish(finishReason); setIsFinishing(false); }} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-200">Հաստատել</button>
                        <button onClick={() => setIsFinishing(false)} className="px-6 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 py-2.5 rounded-xl text-sm font-semibold transition-colors">Չեղարկել</button>
                     </div>
                  </div>
@@ -379,18 +423,5 @@ const AlarmDetailsPanel = ({
     </div>
   );
 };
-
-// Helper for Lucide icon in map (not exported in original Shared but used here)
-const Building2 = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
-      <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
-      <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
-      <path d="M10 6h4" />
-      <path d="M10 10h4" />
-      <path d="M10 14h4" />
-      <path d="M10 18h4" />
-    </svg>
-);
 
 export default AlarmDetailsPanel;

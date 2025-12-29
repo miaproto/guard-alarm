@@ -1,22 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, MapPin, Edit2, Trash2, Archive, CheckCircle, RotateCcw, X, Filter } from 'lucide-react';
+import { Search, Plus, MapPin, Edit2, Trash2, Archive, CheckCircle, RotateCcw, X, Filter, PhoneCall } from 'lucide-react';
 import { Facility, FacilityTypeDefinition, SecurityDepartment } from '../types';
 import { DEPARTMENTS } from '../mockData';
 import FacilityFormModal from '../components/modals/FacilityFormModal';
 import FacilityLocationMapModal from '../components/modals/FacilityLocationMapModal';
 import { Pagination } from '../components/Shared';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 const FacilitiesManagementPage = ({ 
     facilities, 
     setFacilities, 
     types, 
-    departments 
+    departments,
+    onCall,
 }: { 
     facilities: Facility[], 
     setFacilities: (f: Facility[]) => void, 
     types: FacilityTypeDefinition[], 
-    departments: SecurityDepartment[] 
+    departments: SecurityDepartment[],
+    onCall: (phone: string, facility: Facility) => void,
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,29 +132,27 @@ const FacilitiesManagementPage = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs text-gray-500 font-medium ml-1">Տեսակ</label>
-                            <select 
-                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:border-blue-500 outline-none transition-colors"
+                            <SearchableSelect
                                 value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                            >
-                                <option value="all">Բոլորը</option>
-                                {types.map(t => (
-                                    <option key={t.id} value={t.code}>{t.name}</option>
-                                ))}
-                            </select>
+                                onChange={setFilterType}
+                                searchPlaceholder="Որոնել տեսակ..."
+                                options={[
+                                    { value: 'all', label: 'Բոլորը' },
+                                    ...types.map(t => ({ value: t.code, label: t.name }))
+                                ]}
+                            />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs text-gray-500 font-medium ml-1">Պահպանության բաժին</label>
-                            <select 
-                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:border-blue-500 outline-none transition-colors"
+                            <SearchableSelect
                                 value={filterDepartment}
-                                onChange={(e) => setFilterDepartment(e.target.value)}
-                            >
-                                <option value="all">Բոլորը</option>
-                                {Object.entries(DEPARTMENTS).map(([key, label]) => (
-                                    <option key={key} value={key}>{label}</option>
-                                ))}
-                            </select>
+                                onChange={setFilterDepartment}
+                                searchPlaceholder="Որոնել բաժին..."
+                                options={[
+                                    { value: 'all', label: 'Բոլորը' },
+                                    ...Object.entries(DEPARTMENTS).map(([key, label]) => ({ value: key, label }))
+                                ]}
+                            />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs text-gray-500 font-medium ml-1">Արխիվացված</label>
@@ -201,10 +202,39 @@ const FacilitiesManagementPage = ({
                                 <td className="p-4 font-bold text-gray-900 text-sm">{f.name}</td>
                                 <td className="p-4 text-sm text-gray-600">{types.find(t => t.code === f.type)?.name || f.type}</td>
                                 <td className="p-4 text-sm text-gray-600">{DEPARTMENTS[f.department]}</td>
-                                <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate" title={f.address}>{f.address}</td>
+                                <td className="p-4 text-sm text-gray-600 max-w-[200px]">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setSelectedLocation(f)}
+                                            className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg border border-transparent hover:border-blue-100 transition-all shrink-0"
+                                            title="Տեղորոշում"
+                                        >
+                                            <MapPin className="w-4 h-4" />
+                                        </button>
+                                        <span className="truncate" title={f.address}>{f.address}</span>
+                                    </div>
+                                </td>
                                 <td className="p-4 text-sm text-gray-600">
                                     <div className="font-medium">{f.contactPerson}</div>
-                                    <div className="text-xs text-gray-400 font-mono">{f.phones[0]}</div>
+                                    <div className="mt-0.5 space-y-0.5">
+                                      {(f.phones || []).map((phone, idx) => (
+                                        <div key={`${f.id}-phone-${idx}`} className="flex items-center gap-2">
+                                          <div className="text-xs text-gray-400 font-mono leading-tight">{phone}</div>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              onCall(phone, f);
+                                            }}
+                                            className="p-1 rounded-md text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition-colors"
+                                            title={`Զանգել ${phone}`}
+                                          >
+                                            <PhoneCall className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
                                 </td>
                                 <td className="p-4">
                                     {f.isArchived ? (
@@ -219,7 +249,6 @@ const FacilitiesManagementPage = ({
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                        <button onClick={() => setSelectedLocation(f)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg border border-transparent hover:border-blue-100 transition-all" title="Տեղորոշում"><MapPin className="w-4 h-4" /></button>
                                         <button onClick={() => { setEditingFacility(f); setIsModalOpen(true); }} className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-lg border border-transparent hover:border-gray-200 transition-all"><Edit2 className="w-4 h-4" /></button>
                                         <button 
                                             onClick={() => handleArchiveToggle(f)} 

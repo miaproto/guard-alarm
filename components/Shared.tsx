@@ -9,13 +9,14 @@ export const StatusBadge = ({ status }: { status: AlarmStatus }) => {
     RECEIVED: 'bg-red-100 text-red-700 border-red-200 shadow-sm',
     ACTIVE: 'bg-amber-100 text-amber-800 border-amber-200 shadow-sm',
     FINISHED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    FALSE_ALARM: 'bg-slate-100 text-slate-600 border-slate-200'
+    // Requested: make FALSE_ALARM use the same coloring as FINISHED
+    FALSE_ALARM: 'bg-emerald-50 text-emerald-700 border-emerald-200'
   };
   const labels = {
     RECEIVED: 'Ստացված',
     ACTIVE: 'Ակտիվ',
     FINISHED: 'Ավարտված',
-    FALSE_ALARM: 'Ավարտված (Կեղծ)'
+    FALSE_ALARM: 'Կեղծ տագնապ'
   };
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${styles[status]}`}>
@@ -59,17 +60,29 @@ export const TypeBadge = ({ type }: { type: AlarmType }) => {
   );
 };
 
-export const SidebarItem = ({ icon: Icon, label, active, onClick }: { icon: React.ElementType, label: string, active: boolean, onClick: () => void }) => (
-  <button 
-    onClick={onClick} 
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 mb-1 text-left group relative ${
-      active 
-        ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
-        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+export const SidebarItem = ({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  collapsed = false,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  collapsed?: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    title={collapsed ? label : undefined}
+    aria-label={collapsed ? label : undefined}
+    className={`w-full flex items-center ${collapsed ? 'justify-center px-3' : 'gap-3 px-4'} py-3 rounded-lg transition-all duration-200 mb-1 text-left group relative ${
+      active ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
     }`}
   >
     <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} strokeWidth={active ? 2.5 : 2} />
-    <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{label}</span>
+    {!collapsed && <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{label}</span>}
   </button>
 );
 

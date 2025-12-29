@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle } from 'lucide-react';
 import { Unit, Facility, FacilityTypeDefinition, Alarm } from '../types';
 import { DEPARTMENTS } from '../mockData';
@@ -21,6 +21,7 @@ const SecurityMapPage = ({
   const [sidebarTab, setSidebarTab] = useState<'OBJECTS' | 'UNITS'>('OBJECTS');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'FACILITY' | 'UNIT', id: string } | null>(null);
+  const [mapFocus, setMapFocus] = useState<{ lat: number; lng: number; zoom?: number } | undefined>(undefined);
 
   // Collapsible state for department groups
   const [expandedDepts, setExpandedDepts] = useState<Record<string, boolean>>(() => {
@@ -120,6 +121,21 @@ const SecurityMapPage = ({
     return null;
   }, [selectedEntity, facilities, units]);
 
+  // Zoom to selected facility/unit whenever selection changes
+  useEffect(() => {
+    if (!selectedEntity || !selectedData) return;
+    const coords =
+      selectedEntity.type === 'FACILITY'
+        ? (selectedData as Facility).coordinates
+        : (selectedData as Unit).coordinates;
+
+    setMapFocus({
+      lat: coords.lat,
+      lng: coords.lng,
+      zoom: selectedEntity.type === 'FACILITY' ? 15 : 16,
+    });
+  }, [selectedEntity, selectedData]);
+
   // Create map markers
   const mapMarkers: MapMarker[] = useMemo(() => {
     const markers: MapMarker[] = [];
@@ -179,6 +195,8 @@ const SecurityMapPage = ({
           <MapLibreMap 
             markers={mapMarkers}
             height="100%"
+            focus={mapFocus}
+            autoFitBounds={!selectedEntity}
           />
 
           {/* Statistics Overlay */}

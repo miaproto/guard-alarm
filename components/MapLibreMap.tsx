@@ -16,6 +16,15 @@ interface MapLibreMapProps {
   zoom?: number;
   height?: string;
   interactive?: boolean;
+  /**
+   * When provided, the map will animate to this location/zoom.
+   */
+  focus?: { lat: number; lng: number; zoom?: number };
+  /**
+   * If true, auto-fit the map to all markers when markers change (default true).
+   * Turn off when you want manual focus/selection to take precedence.
+   */
+  autoFitBounds?: boolean;
   onLoad?: () => void;
 }
 
@@ -29,12 +38,15 @@ const MapLibreMap = ({
   zoom = DEFAULT_ZOOM, 
   height = '100%',
   interactive = true,
+  focus,
+  autoFitBounds = true,
   onLoad
 }: MapLibreMapProps) => {
   const mapRef = useRef<MapRef>(null);
 
   useEffect(() => {
     // Fit bounds when markers change
+    if (!autoFitBounds) return;
     if (markers.length > 0 && mapRef.current) {
       const bounds = markers.reduce((acc, marker) => {
         return {
@@ -58,7 +70,16 @@ const MapLibreMap = ({
         );
       }
     }
-  }, [markers]);
+  }, [markers, autoFitBounds]);
+
+  useEffect(() => {
+    if (!focus || !mapRef.current) return;
+    mapRef.current.flyTo({
+      center: [focus.lng, focus.lat],
+      zoom: focus.zoom,
+      duration: 900,
+    });
+  }, [focus?.lat, focus?.lng, focus?.zoom]);
 
   return (
     <div style={{ height, width: '100%' }}>

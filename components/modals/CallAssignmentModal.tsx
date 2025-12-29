@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { X, Search, Check, Shield } from 'lucide-react';
+import { X, Search, Check, Shield, Eye, EyeOff, Lock } from 'lucide-react';
 import { Facility } from '../../types';
 import { DEPARTMENTS } from '../../mockData';
 
@@ -16,6 +16,7 @@ const CallAssignmentModal = ({
     onAssign: (facility: Facility) => void;
 }) => {
     const [search, setSearch] = useState('');
+    const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
 
     const filtered = useMemo(() => {
         const term = search.toLowerCase();
@@ -25,6 +26,19 @@ const CallAssignmentModal = ({
             f.address.toLowerCase().includes(term)
         );
     }, [facilities, search]);
+
+    const togglePasswordVisibility = (facilityId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setVisiblePasswords(prev => {
+            const next = new Set(prev);
+            if (next.has(facilityId)) {
+                next.delete(facilityId);
+            } else {
+                next.add(facilityId);
+            }
+            return next;
+        });
+    };
 
     if (!isOpen) return null;
 
@@ -64,7 +78,7 @@ const CallAssignmentModal = ({
                                     <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                         <Shield className="w-5 h-5" />
                                     </div>
-                                    <div>
+                                    <div className="flex-1">
                                         <div className="font-bold text-slate-900">{f.name}</div>
                                         <div className="text-xs text-slate-500 flex gap-2 items-center mt-1">
                                             <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{f.id}</span>
@@ -72,6 +86,26 @@ const CallAssignmentModal = ({
                                             <span>{DEPARTMENTS[f.department]}</span>
                                         </div>
                                         <div className="text-xs text-slate-400 mt-1">{f.address}</div>
+                                        {f.password && (
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <Lock className="w-3 h-3 text-gray-400" />
+                                                <span className="text-xs text-gray-500">Գաղտնաբառ:</span>
+                                                <span className="text-xs font-mono text-gray-700 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                                                    {visiblePasswords.has(f.id) ? f.password : '••••••••'}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => togglePasswordVisibility(f.id, e)}
+                                                    className="ml-1 p-1 hover:bg-gray-100 rounded transition-colors"
+                                                    title={visiblePasswords.has(f.id) ? 'Թաքցնել' : 'Ցուցադրել'}
+                                                >
+                                                    {visiblePasswords.has(f.id) ? (
+                                                        <EyeOff className="w-3.5 h-3.5 text-gray-500" />
+                                                    ) : (
+                                                        <Eye className="w-3.5 h-3.5 text-gray-500" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors">

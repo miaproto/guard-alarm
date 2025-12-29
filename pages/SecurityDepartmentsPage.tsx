@@ -177,7 +177,18 @@ const SecurityDepartmentsPage = ({ facilities }: { facilities: Facility[] }) => 
                       return (
                         <tr key={dept.id} className="hover:bg-gray-50 transition-colors group">
                             <td className="p-4 font-bold text-gray-900 text-sm">{dept.name}</td>
-                            <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate" title={dept.address}>{dept.address}</td>
+                            <td className="p-4 text-sm text-gray-600 max-w-[200px]">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setSelectedLocation(dept)}
+                                        className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg border border-transparent hover:border-blue-100 transition-all shrink-0"
+                                        title="Տեղորոշում"
+                                    >
+                                        <MapPin className="w-4 h-4" />
+                                    </button>
+                                    <span className="truncate" title={dept.address}>{dept.address}</span>
+                                </div>
+                            </td>
                             <td className="p-4 text-sm text-gray-600">{dept.contactPerson}</td>
                             <td className="p-4 text-sm text-gray-600 font-mono">{dept.contactPhone}</td>
                             <td className="p-4">
@@ -198,13 +209,6 @@ const SecurityDepartmentsPage = ({ facilities }: { facilities: Facility[] }) => 
                             </td>
                             <td className="p-4 text-right">
                                 <div className="flex items-center justify-end gap-1">
-                                    <button 
-                                        onClick={() => setSelectedLocation(dept)}
-                                        className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg border border-transparent hover:border-blue-100 transition-all"
-                                        title="Տեղորոշում"
-                                    >
-                                        <MapPin className="w-4 h-4" />
-                                    </button>
                                     <button 
                                         onClick={() => { setEditingDept(dept); setIsModalOpen(true); }}
                                         className="p-1.5 hover:bg-gray-100 text-gray-600 rounded-lg border border-transparent hover:border-gray-200 transition-all"

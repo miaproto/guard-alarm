@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Map as MapIcon, Plus, Minus, Lock } from 'lucide-react';
+import { X, Map as MapIcon, Plus, Minus, Lock, Eye, EyeOff } from 'lucide-react';
 import { Facility, FacilityTypeDefinition, SecurityDepartment, Department } from '../../types';
 import { DEPARTMENTS, WEEK_DAYS } from '../../mockData';
 import AddressSelectorModal from './AddressSelectorModal';
@@ -43,6 +43,11 @@ const FacilityFormModal = ({
       connectionStatus: 'ONLINE'
     });
     const [isMapOpen, setIsMapOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+      if (isOpen) setShowPassword(false);
+    }, [isOpen]);
 
     useEffect(() => {
       if (initialData) {
@@ -214,12 +219,22 @@ const FacilityFormModal = ({
                         <div className="relative">
                             <Lock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                             <input 
-                                type="text" 
-                                className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none font-mono"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                className="w-full border border-gray-300 rounded-lg pl-9 pr-10 py-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none font-mono"
                                 value={formData.password}
                                 onChange={e => setFormData({...formData, password: e.target.value})}
                                 placeholder="*****"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((v) => !v)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                                aria-label={showPassword ? 'Թաքցնել գաղտնաբառը' : 'Ցուցադրել գաղտնաբառը'}
+                                title={showPassword ? 'Թաքցնել' : 'Ցուցադրել'}
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
                         </div>
                     </div>
                 </div>

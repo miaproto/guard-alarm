@@ -234,15 +234,28 @@ export const MOCK_LOGS: SecurityLog[] = [
   { id: 'L-10', timestamp: new Date(Date.now() - 1000 * 60 * 420), department: 'Erebuni', facilityName: 'Թանգարան', facilityCode: 'OBJ-200', address: 'ք. Երևան, Էրեբունի 1', action: 'LOW_BATTERY' },
 ];
 
+// Sample audio URLs for call recordings
+// Using CORS-friendly public audio samples
+const SAMPLE_AUDIO_URLS = [
+  'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg',
+  'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg',
+  'https://actions.google.com/sounds/v1/alarms/beep_short.ogg',
+  'https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg',
+  'https://actions.google.com/sounds/v1/alarms/dosimeter_alarm.ogg',
+  'https://actions.google.com/sounds/v1/alarms/mechanical_clock_ring.ogg',
+  'https://actions.google.com/sounds/v1/alarms/medium_bell_ringing_near.ogg',
+  'https://actions.google.com/sounds/v1/alarms/phone_alerts_and_rings.ogg',
+];
+
 export const MOCK_CALLS: CallLog[] = [
-  { id: '2025-125', timestamp: new Date(Date.now() - 1000 * 20), durationSec: 0, type: 'INCOMING_ANSWERED', status: 'IN_PROGRESS', phoneNumber: '095-99-88-77', operatorName: 'Արմեն Ավագյան', recordingUrl: '#' },
-  { id: '2025-124', timestamp: new Date(Date.now() - 1000 * 45), durationSec: 0, type: 'INCOMING_ANSWERED', status: 'IN_PROGRESS', facilityCode: 'OBJ-200', facilityName: 'Թանգարան', phoneNumber: '010-11-11-11', department: 'Erebuni', operatorName: 'Արմեն Ավագյան', recordingUrl: '#' },
-  { id: '2025-123', timestamp: new Date(Date.now() - 1000 * 60 * 5), durationSec: 125, type: 'INCOMING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-112', facilityName: 'Ոսկու Շուկա', phoneNumber: '094-00-11-22', department: 'Kentron', operatorName: 'Արմեն Ավագյան', recordingUrl: '#' },
-  { id: '2025-122', timestamp: new Date(Date.now() - 1000 * 60 * 15), durationSec: 45, type: 'OUTGOING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-001', facilityName: 'Ամերիաբանկ ՓԲԸ', phoneNumber: '091-11-22-33', department: 'Kentron', operatorName: 'Օպերատոր 4', recordingUrl: '#' },
-  { id: '2025-121', timestamp: new Date(Date.now() - 1000 * 60 * 45), durationSec: 0, type: 'INCOMING_UNANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-055', facilityName: 'Երևանի թիվ 114 դպրոց', phoneNumber: '099-88-77-66', department: 'Kentron', operatorName: 'Աննա Սարգսյան', recordingUrl: '#' },
-  { id: '2025-120', timestamp: new Date(Date.now() - 1000 * 60 * 120), durationSec: 180, type: 'OUTGOING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-099', facilityName: 'Սուպերմարկետ "Երևան Սիթի"', phoneNumber: '093-33-22-11', department: 'Arabkir', operatorName: 'Վահան Սարգսյան', recordingUrl: '#' },
-  { id: '2025-119', timestamp: new Date(Date.now() - 1000 * 60 * 180), durationSec: 12, type: 'OUTGOING_UNANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-200', facilityName: 'Թանգարան', phoneNumber: '010-11-11-11', department: 'Erebuni', operatorName: 'Գևորգ Կարապետյան', recordingUrl: '#' },
-  { id: '2025-118', timestamp: new Date(Date.now() - 1000 * 60 * 240), durationSec: 320, type: 'INCOMING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-112', facilityName: 'Ոսկու Շուկա', phoneNumber: '094-00-11-22', department: 'Kentron', operatorName: 'Արմեն Ավագյան', recordingUrl: '#' },
+  { id: '2025-125', timestamp: new Date(Date.now() - 1000 * 20), durationSec: 0, type: 'INCOMING_ANSWERED', status: 'IN_PROGRESS', phoneNumber: '095-99-88-77', operatorName: 'Արմեն Ավագյան', recordingUrl: SAMPLE_AUDIO_URLS[0] },
+  { id: '2025-124', timestamp: new Date(Date.now() - 1000 * 45), durationSec: 0, type: 'INCOMING_ANSWERED', status: 'IN_PROGRESS', facilityCode: 'OBJ-200', facilityName: 'Թանգարան', phoneNumber: '010-11-11-11', department: 'Erebuni', operatorName: 'Արմեն Ավագյան', recordingUrl: SAMPLE_AUDIO_URLS[1] },
+  { id: '2025-123', timestamp: new Date(Date.now() - 1000 * 60 * 5), durationSec: 125, type: 'INCOMING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-112', facilityName: 'Ոսկու Շուկա', phoneNumber: '094-00-11-22', department: 'Kentron', operatorName: 'Արմեն Ավագյան', recordingUrl: SAMPLE_AUDIO_URLS[2] },
+  { id: '2025-122', timestamp: new Date(Date.now() - 1000 * 60 * 15), durationSec: 45, type: 'OUTGOING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-001', facilityName: 'Ամերիաբանկ ՓԲԸ', phoneNumber: '091-11-22-33', department: 'Kentron', operatorName: 'Օպերատոր 4', recordingUrl: SAMPLE_AUDIO_URLS[3] },
+  { id: '2025-121', timestamp: new Date(Date.now() - 1000 * 60 * 45), durationSec: 0, type: 'INCOMING_UNANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-055', facilityName: 'Երևանի թիվ 114 դպրոց', phoneNumber: '099-88-77-66', department: 'Kentron', operatorName: 'Աննա Սարգսյան', recordingUrl: SAMPLE_AUDIO_URLS[4] },
+  { id: '2025-120', timestamp: new Date(Date.now() - 1000 * 60 * 120), durationSec: 180, type: 'OUTGOING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-099', facilityName: 'Սուպերմարկետ "Երևան Սիթի"', phoneNumber: '093-33-22-11', department: 'Arabkir', operatorName: 'Վահան Սարգսյան', recordingUrl: SAMPLE_AUDIO_URLS[5] },
+  { id: '2025-119', timestamp: new Date(Date.now() - 1000 * 60 * 180), durationSec: 12, type: 'OUTGOING_UNANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-200', facilityName: 'Թանգարան', phoneNumber: '010-11-11-11', department: 'Erebuni', operatorName: 'Գևորգ Կարապետյան', recordingUrl: SAMPLE_AUDIO_URLS[6] },
+  { id: '2025-118', timestamp: new Date(Date.now() - 1000 * 60 * 240), durationSec: 320, type: 'INCOMING_ANSWERED', status: 'COMPLETED', facilityCode: 'OBJ-112', facilityName: 'Ոսկու Շուկա', phoneNumber: '094-00-11-22', department: 'Kentron', operatorName: 'Արմեն Ավագյան', recordingUrl: SAMPLE_AUDIO_URLS[7] },
 ];
 
 export const MOCK_SECURITY_DEPARTMENTS: SecurityDepartment[] = [
