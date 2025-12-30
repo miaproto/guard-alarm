@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle } from 'lucide-react';
+import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle, PhoneCall } from 'lucide-react';
 import { Unit, Facility, FacilityTypeDefinition, Alarm } from '../types';
 import { DEPARTMENTS } from '../mockData';
 import { BookIcon } from '../components/Shared';
@@ -11,12 +11,14 @@ const SecurityMapPage = ({
   units, 
   facilities,
   facilityTypes,
-  alarms
+  alarms,
+  onCall,
 }: { 
   units: Unit[]; 
   facilities: Facility[]; 
   facilityTypes: FacilityTypeDefinition[];
   alarms: Alarm[];
+  onCall?: (phone: string, facility?: Facility) => void;
 }) => {
   const [sidebarTab, setSidebarTab] = useState<'OBJECTS' | 'UNITS'>('OBJECTS');
   const [searchQuery, setSearchQuery] = useState('');
@@ -279,9 +281,26 @@ const SecurityMapPage = ({
                               </div>
                               <div className="col-span-2">
                                  <span className="text-xs text-gray-400 block mb-1">Կոնտակտ</span>
-                                 <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-100">
-                                    <div className="text-sm font-medium">{f.contactPerson}</div>
-                                    <div className="text-xs font-mono text-gray-500">{f.phones[0]}</div>
+                                 <div className="bg-gray-50 p-2 rounded border border-gray-100 space-y-2">
+                                    <div className="text-sm font-medium text-gray-900">{f.contactPerson}</div>
+                                    <div className="space-y-1">
+                                      {(f.phones || []).map((phone) => (
+                                        <div
+                                          key={phone}
+                                          className="flex items-center justify-between bg-white/70 px-2 py-1.5 rounded border border-gray-100"
+                                        >
+                                          <div className="text-xs font-mono text-gray-600">{phone}</div>
+                                          <button
+                                            type="button"
+                                            className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors"
+                                            title={`Զանգել ${phone}`}
+                                            onClick={() => onCall?.(phone, f)}
+                                          >
+                                            <PhoneCall className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
                                  </div>
                               </div>
                            </div>

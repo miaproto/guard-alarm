@@ -399,7 +399,13 @@ export default function AppContent() {
 
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {currentView === 'MAP' ? (
-            <SecurityMapPage units={units} facilities={facilities} facilityTypes={facilityTypes} alarms={alarms} />
+            <SecurityMapPage
+              units={units}
+              facilities={facilities}
+              facilityTypes={facilityTypes}
+              alarms={alarms}
+              onCall={handleCallPhone}
+            />
           ) : currentView === 'CALLS' ? (
             <CallsPage />
           ) : currentView === 'LOGS' ? (
