@@ -117,15 +117,23 @@ const AddressSelectorModal = ({
               <div className="bg-white/95 backdrop-blur border border-gray-200 rounded-xl p-3 shadow-lg flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-xs text-gray-500 font-medium mb-1">Ընտրված հասցե</div>
-                  <div className="text-sm text-gray-900 font-semibold leading-snug break-words">
-                    {selectedAddress || `${selectedCoords.lat.toFixed(6)}, ${selectedCoords.lng.toFixed(6)}`}
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-1 font-mono">
-                    {selectedCoords.lat.toFixed(6)}, {selectedCoords.lng.toFixed(6)}
-                  </div>
+                  {selectedCoords ? (
+                    <>
+                      <div className="text-sm text-gray-900 font-semibold leading-snug break-words">
+                        {selectedAddress || `${selectedCoords.lat.toFixed(6)}, ${selectedCoords.lng.toFixed(6)}`}
+                      </div>
+                      <div className="text-[11px] text-gray-500 mt-1 font-mono">
+                        {selectedCoords.lat.toFixed(6)}, {selectedCoords.lng.toFixed(6)}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm text-gray-500 font-semibold">
+                      Սեղմեք քարտեզին՝ կետ ընտրելու համար
+                    </div>
+                  )}
                 </div>
 
-                {isResolving ? (
+                {selectedCoords && isResolving ? (
                   <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                     <Loader2 className="w-4 h-4 animate-spin" /> որոնում...
                   </div>
