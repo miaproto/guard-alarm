@@ -330,6 +330,8 @@ const FacilityFormModal = ({
       <AddressSelectorModal 
           isOpen={isMapOpen} 
           onClose={() => setIsMapOpen(false)} 
+          initialCoords={formData.coordinates}
+          initialAddress={formData.address}
           onSelect={(coords, address) => {
               setFormData({...formData, coordinates: coords, address: address});
           }}

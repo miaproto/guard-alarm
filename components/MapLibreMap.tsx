@@ -26,6 +26,7 @@ interface MapLibreMapProps {
    */
   autoFitBounds?: boolean;
   onLoad?: () => void;
+  onMapClick?: (coords: { lat: number; lng: number }) => void;
 }
 
 // Default center: Yerevan, Armenia
@@ -40,7 +41,8 @@ const MapLibreMap = ({
   interactive = true,
   focus,
   autoFitBounds = true,
-  onLoad
+  onLoad,
+  onMapClick,
 }: MapLibreMapProps) => {
   const mapRef = useRef<MapRef>(null);
 
@@ -95,6 +97,10 @@ const MapLibreMap = ({
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         interactive={interactive}
         onLoad={onLoad}
+        onClick={(e) => {
+          const [lng, lat] = e.lngLat.toArray();
+          onMapClick?.({ lat, lng });
+        }}
       >
         {/* Controls */}
         <NavigationControl position="top-right" />
