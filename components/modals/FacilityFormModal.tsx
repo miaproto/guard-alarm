@@ -5,6 +5,9 @@ import { Facility, FacilityTypeDefinition, SecurityDepartment, Department } from
 import { DEPARTMENTS, WEEK_DAYS } from '../../mockData';
 import AddressSelectorModal from './AddressSelectorModal';
 
+// Default center: Yerevan, Armenia
+const DEFAULT_COORDS = { lat: 40.1792, lng: 44.4991 };
+
 const FacilityFormModal = ({
     isOpen,
     onClose,
@@ -38,7 +41,7 @@ const FacilityFormModal = ({
         'Sat': { start: '10:00', end: '16:00', active: false },
         'Sun': { start: '10:00', end: '16:00', active: false },
       },
-      coordinates: { x: 50, y: 50 },
+      coordinates: DEFAULT_COORDS,
       isArmed: false,
       connectionStatus: 'ONLINE'
     });
@@ -74,7 +77,7 @@ const FacilityFormModal = ({
           contactPerson: '',
           phones: [''],
           password: '',
-          coordinates: { x: 50, y: 50 },
+          coordinates: DEFAULT_COORDS,
           scheduleConfig: {
             'Mon': { start: '09:00', end: '18:00', active: true },
             'Tue': { start: '09:00', end: '18:00', active: true },
