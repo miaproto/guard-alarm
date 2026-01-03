@@ -7,15 +7,6 @@ import { BookIcon } from '../components/Shared';
 import { TYPE_LABELS, isWarningType } from '../utils';
 import MapLibreMap, { MapMarker } from '../components/MapLibreMap';
 
-const toTelHref = (phone: string) => {
-  // Keep digits and leading '+'
-  const trimmed = phone.trim();
-  const cleaned = trimmed.startsWith('+')
-    ? '+' + trimmed.slice(1).replace(/[^\d]/g, '')
-    : trimmed.replace(/[^\d]/g, '');
-  return `tel:${cleaned}`;
-};
-
 const SecurityMapPage = ({ 
   units, 
   facilities,
@@ -304,15 +295,9 @@ const SecurityMapPage = ({
                                             className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 bg-white text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors"
                                             title={`Զանգել ${phone}`}
                                             onClick={() => {
-                                              // Demo flow (toast)
+                                              // Demo flow (toast) only.
+                                              // Avoid tel:/external navigation to prevent "Open external link" prompts.
                                               onCall?.(phone, f);
-
-                                              // Best-effort real call action on mobile / supported desktops
-                                              try {
-                                                window.location.href = toTelHref(phone);
-                                              } catch {
-                                                // ignore
-                                              }
                                             }}
                                           >
                                             <PhoneCall className="w-4 h-4" />
