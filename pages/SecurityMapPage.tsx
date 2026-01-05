@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle, PhoneCall } from 'lucide-react';
+import { Search, ChevronDown, Shield, WifiOff, Radio, Car, X, AlertTriangle, PhoneCall, Lock, Unlock } from 'lucide-react';
 import { Unit, Facility, FacilityTypeDefinition, Alarm } from '../types';
 import { DEPARTMENTS } from '../mockData';
 import { BookIcon } from '../components/Shared';
@@ -462,11 +462,36 @@ const SecurityMapPage = ({
                                         <div className="text-sm font-bold text-gray-900 truncate">{f.name}</div>
                                         <div className="text-[10px] text-gray-400">{f.id}</div>
                                      </div>
-                                     <div className={`w-2 h-2 shrink-0 rounded-full ${
-                                         f.activeAlarmId 
-                                            ? isWarning ? 'bg-amber-500' : 'bg-red-500 animate-pulse' 
-                                            : f.connectionStatus === 'OFFLINE' ? 'bg-gray-400' : 'bg-green-500'
-                                     }`}></div>
+                                     <div className="flex items-center gap-2 shrink-0">
+                                       <span
+                                         className={`inline-flex items-center justify-center w-7 h-7 rounded-md border transition-colors ${
+                                           f.isArmed ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'
+                                         }`}
+                                         title={f.isArmed ? 'Պահպանության տակ' : 'Հանված է պահպանությունից'}
+                                       >
+                                         {f.isArmed ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                       </span>
+                                       <div
+                                         className={`w-2 h-2 rounded-full ${
+                                           f.activeAlarmId
+                                             ? isWarning
+                                               ? 'bg-amber-500'
+                                               : 'bg-red-500 animate-pulse'
+                                             : f.connectionStatus === 'OFFLINE'
+                                               ? 'bg-gray-400'
+                                               : 'bg-green-500'
+                                         }`}
+                                         title={
+                                           f.activeAlarmId
+                                             ? isWarning
+                                               ? 'Զգուշացում'
+                                               : 'Տագնապ'
+                                             : f.connectionStatus === 'OFFLINE'
+                                               ? 'Օֆլայն'
+                                               : 'Օնլայն'
+                                         }
+                                       />
+                                     </div>
                                   </div>
                                 );
                              })}
