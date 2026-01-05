@@ -255,7 +255,7 @@ const AlarmDetailsPanel = ({
                     <div className={`p-1 rounded-lg ${isContactsOpen ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
                         <Users className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-wider">Կոնտակտային Տվյալներ</span>
+                    <span className="text-sm font-bold uppercase tracking-wider">Կոնտակտային Տվյալներ</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isContactsOpen ? 'rotate-180' : ''}`} />
               </button>
